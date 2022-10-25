@@ -64,6 +64,7 @@ func drag_drop(files:PoolStringArray, scr):
 			var line:= file.get_csv_line(' ')
 			if line[0] == 'element' and line[1] == 'vertex':
 				total_vertex_count = int(line[2])
+			result.store_csv_line(line, ' ')
 	# 클라우드 포인트 부분
 	var work_count:= 0 # 현재 작업량
 	# 색상 초과 제한
@@ -83,6 +84,7 @@ func drag_drop(files:PoolStringArray, scr):
 	var last_ratio_hundred:= 0
 	while not file.eof_reached():
 		line = file.get_csv_line(' ')
+		$ProgressBar.value = file.get_position()
 		if not line: break
 		# 밀도에 따라 클라우드 무시
 		ratio += density_ratio
@@ -90,6 +92,10 @@ func drag_drop(files:PoolStringArray, scr):
 		var ratio_hundred:= int(ratio / 100)
 		if last_ratio_hundred == ratio_hundred:
 			total_vertex_count -= 1
+			work_count += 1
+			if work_count >= work_limit:
+				work_count = 0
+				yield(get_tree, "idle_frame")
 			continue
 		last_ratio_hundred = ratio_hundred
 		# 색상 제한에 따라 클라우드 무시
@@ -99,7 +105,6 @@ func drag_drop(files:PoolStringArray, scr):
 			else:
 				total_vertex_count -= 1
 		result.store_csv_line(line, ' ')
-		$ProgressBar.value = file.get_position()
 		work_count += 1
 		if work_count >= work_limit:
 			work_count = 0
@@ -109,7 +114,7 @@ func drag_drop(files:PoolStringArray, scr):
 	result.seek(0)
 	for i in range(11):
 		var reline:= result.get_csv_line(' ')
-		if reline.size() == 3 and reline[1] == 'vertex':
+		if reline[0] == 'element' and reline[1] == 'vertex':
 			var _form:= 'element vertex %s' % str('%-',str(total_vertex_count).length(),'d')
 			result.store_string(_form % total_vertex_count)
 			break
