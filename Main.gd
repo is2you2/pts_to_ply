@@ -41,7 +41,9 @@ func drag_drop(files:PoolStringArray, scr):
 	$ProgressBar.max_value = file.get_position()
 	file.seek(0)
 	$PercentSlider.editable = false
+	$PercentSlider2.editable = false
 	$PercentEdit.editable = false
+	$PercentEdit2.editable = false
 	$RedCol.editable = false
 	$GreenCol.editable = false
 	$BlueCol.editable = false
@@ -62,7 +64,6 @@ func drag_drop(files:PoolStringArray, scr):
 			var line:= file.get_csv_line(' ')
 			if line[0] == 'element' and line[1] == 'vertex':
 				total_vertex_count = int(line[2])
-	return
 	# 클라우드 포인트 부분
 	var work_count:= 0 # 현재 작업량
 	# 색상 초과 제한
@@ -77,12 +78,13 @@ func drag_drop(files:PoolStringArray, scr):
 		color_limit['green'] = int($GreenCol.text)
 	if $BlueCol.text:
 		color_limit['blue'] = int($BlueCol.text)
-	var line:String
+	var line:Array
 	var ratio:= 0.0
 	var last_ratio_hundred:= 0
 	while not file.eof_reached():
-		line = file.get_line()
+		line = file.get_csv_line(' ')
 		if not line: break
+		# 밀도에 따라 클라우드 무시
 		ratio += density_ratio
 		if ratio > 1000: ratio -= 1000
 		var ratio_hundred:= int(ratio / 100)
@@ -90,15 +92,28 @@ func drag_drop(files:PoolStringArray, scr):
 			total_vertex_count -= 1
 			continue
 		last_ratio_hundred = ratio_hundred
-		result.store_line(line)
-		$current.text = str(file.get_position())
+		# 색상 제한에 따라 클라우드 무시
+		if line.size() == 7:
+			if int(line[4]) <= color_limit['red'] and int(line[5]) <= color_limit['green'] and int(line[6]) <= color_limit['blue']:
+				result.store_csv_line(line, ' ')
+			else:
+				total_vertex_count -= 1
+		result.store_csv_line(line, ' ')
+		$ProgressBar.value = file.get_position()
 		work_count += 1
 		if work_count >= work_limit:
 			work_count = 0
 			yield(get_tree, "idle_frame")
 	result.flush()
-	result.close()
 	file.close()
+	result.seek(0)
+	for i in range(11):
+		var reline:= result.get_csv_line(' ')
+		if reline.size() == 3 and reline[1] == 'vertex':
+			var _form:= 'element vertex %s' % str('%-',str(total_vertex_count).length(),'d')
+			result.store_string(_form % total_vertex_count)
+			break
+	result.close()
 	get_tree.quit()
 
 # 한번에 처리하는 줄 수
