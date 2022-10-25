@@ -7,30 +7,103 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource( 1 )
 
+[node name="Title" type="Label" parent="."]
+anchor_right = 1.0
+margin_top = 14.0
+margin_bottom = 28.0
+text = "Drag & Drop *.pts or *.ply to calculate a *.ply"
+align = 1
+
 [node name="Label" type="Label" parent="."]
-margin_left = 16.0
-margin_top = 24.0
-margin_right = 79.0
-margin_bottom = 38.0
+margin_left = 24.0
+margin_top = 47.0
+margin_right = 87.0
+margin_bottom = 61.0
 text = "Progress: "
 
-[node name="current" type="Label" parent="."]
-margin_left = 98.0
-margin_top = 24.0
-margin_right = 161.0
-margin_bottom = 38.0
-text = "Progress: "
+[node name="ProgressBar" type="ProgressBar" parent="."]
+margin_left = 103.0
+margin_top = 47.0
+margin_right = 345.0
+margin_bottom = 61.0
 
-[node name="maximum" type="Label" parent="."]
-margin_left = 237.0
-margin_top = 24.0
-margin_right = 300.0
-margin_bottom = 38.0
-text = "get_len"
+[node name="Label2" type="Label" parent="."]
+margin_left = 23.0
+margin_top = 86.0
+margin_right = 111.0
+margin_bottom = 100.0
+text = "density ratio: "
 
-[node name="sep" type="Label" parent="."]
-margin_left = 196.0
-margin_top = 24.0
-margin_right = 259.0
-margin_bottom = 38.0
-text = "/"
+[node name="Label4" type="Label" parent="."]
+margin_left = 23.0
+margin_top = 201.0
+margin_right = 48.0
+margin_bottom = 215.0
+text = "red:"
+
+[node name="Label5" type="Label" parent="."]
+margin_left = 127.0
+margin_top = 201.0
+margin_right = 167.0
+margin_bottom = 215.0
+text = "green:"
+
+[node name="Label6" type="Label" parent="."]
+margin_left = 242.0
+margin_top = 201.0
+margin_right = 274.0
+margin_bottom = 215.0
+text = "blue:"
+
+[node name="Label3" type="Label" parent="."]
+margin_left = 24.0
+margin_top = 169.0
+margin_right = 146.0
+margin_bottom = 183.0
+text = "remove over-color:"
+
+[node name="Label7" type="Label" parent="."]
+margin_left = 88.0
+margin_top = 121.0
+margin_right = 100.0
+margin_bottom = 135.0
+text = "%"
+
+[node name="PercentSlider" type="HSlider" parent="."]
+margin_left = 106.0
+margin_top = 119.0
+margin_right = 343.0
+margin_bottom = 135.0
+min_value = 0.1
+step = 0.1
+value = 1.0
+
+[node name="PercentEdit" type="LineEdit" parent="."]
+margin_left = 27.0
+margin_top = 115.0
+margin_right = 85.0
+margin_bottom = 139.0
+
+[node name="RedCol" type="LineEdit" parent="."]
+margin_left = 55.0
+margin_top = 195.0
+margin_right = 113.0
+margin_bottom = 219.0
+placeholder_text = "256"
+
+[node name="GreenCol" type="LineEdit" parent="."]
+margin_left = 172.0
+margin_top = 195.0
+margin_right = 230.0
+margin_bottom = 219.0
+placeholder_text = "256"
+
+[node name="BlueCol" type="LineEdit" parent="."]
+margin_left = 278.0
+margin_top = 195.0
+margin_right = 336.0
+margin_bottom = 219.0
+placeholder_text = "256"
+
+[connection signal="value_changed" from="PercentSlider" to="." method="_on_PercentSlider_value_changed"]
+[connection signal="text_changed" from="PercentEdit" to="." method="_on_LineEdit_text_changed"]
