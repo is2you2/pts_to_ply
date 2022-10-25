@@ -3,6 +3,8 @@ extends Control
 
 func _ready():
 	get_tree().connect("files_dropped", self, 'drag_drop')
+	$PercentEdit.placeholder_text = str($PercentSlider.value)
+	$PercentEdit2.placeholder_text = str($PercentSlider2.value)
 
 const form:= [
 	'ply',
@@ -46,7 +48,7 @@ func drag_drop(files:PoolStringArray, scr):
 	var result:= File.new()
 	var rerr:= result.open(_orig_dir_path + _orig_name + '_result.ply', File.WRITE)
 	var total_vertex_count:int
-	# 아래부터 파일 직접 편집
+	# 아래부터 파일 직접 편집, 헤더 부분
 	if _orig_ext == 'pts': # 입력파일이 pts인경우 헤더처리 진행
 		var count_line:= file.get_line()
 		total_vertex_count = int(count_line)
@@ -61,32 +63,65 @@ func drag_drop(files:PoolStringArray, scr):
 			if line[0] == 'element' and line[1] == 'vertex':
 				total_vertex_count = int(line[2])
 	return
-	var work_count:= 0
-	var f_line:String
+	# 클라우드 포인트 부분
+	var work_count:= 0 # 현재 작업량
+	# 색상 초과 제한
+	var color_limit:= {
+		'red': 256,
+		'green': 256,
+		'blue': 256,
+	}
+	if $RedCol.text:
+		color_limit['red'] = int($RedCol.text)
+	if $GreenCol.text:
+		color_limit['green'] = int($GreenCol.text)
+	if $BlueCol.text:
+		color_limit['blue'] = int($BlueCol.text)
+	var line:String
+	var ratio:= 0.0
+	var last_ratio_hundred:= 0
 	while not file.eof_reached():
-		f_line = file.get_line()
-		if not f_line:
-			break
-		result.store_line(f_line)
+		line = file.get_line()
+		if not line: break
+		ratio += density_ratio
+		if ratio > 1000: ratio -= 1000
+		var ratio_hundred:= int(ratio / 100)
+		if last_ratio_hundred == ratio_hundred:
+			total_vertex_count -= 1
+			continue
+		last_ratio_hundred = ratio_hundred
+		result.store_line(line)
 		$current.text = str(file.get_position())
 		work_count += 1
-		if work_count >= BUNDLE_COUNT:
+		if work_count >= work_limit:
 			work_count = 0
-			yield(get_tree, "physics_frame")
+			yield(get_tree, "idle_frame")
 	result.flush()
 	result.close()
 	file.close()
 	get_tree.quit()
 
 # 한번에 처리하는 줄 수
-const BUNDLE_COUNT:= 3000
+var work_limit:= 2500
+var density_ratio:= 100.0
 
 func _on_LineEdit_text_changed(new_text):
 	if new_text:
 		$PercentSlider.value = float(new_text)
-		$PercentSlider.editable = false
-	else:
-		$PercentSlider.editable = true
+	$PercentSlider.editable = not bool(new_text)
+	density_ratio = float(new_text)
 
 func _on_PercentSlider_value_changed(value):
 	$PercentEdit.placeholder_text = str(value)
+	density_ratio = float(value)
+
+func _on_PercentEdit2_text_changed(new_text):
+	if new_text:
+		$PercentSlider2.value = int(new_text)
+	$PercentSlider2.editable = not bool(new_text)
+	work_limit = int(new_text)
+
+func _on_PercentSlider2_value_changed(value):
+	$PercentEdit2.placeholder_text = str(value)
+	work_limit = int(value)
+	
