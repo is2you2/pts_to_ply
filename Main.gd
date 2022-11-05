@@ -104,7 +104,6 @@ func drag_drop(files:PoolStringArray, scr):
 				result.store_csv_line(line, ' ')
 			else:
 				total_vertex_count -= 1
-		result.store_csv_line(line, ' ')
 		work_count += 1
 		if work_count >= work_limit:
 			work_count = 0
